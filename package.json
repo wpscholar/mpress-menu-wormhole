@@ -1,0 +1,19 @@
+{
+  "name": "mpress-menu-wormhole",
+  "description": "Easily add a menu as a submenu to another menu in WordPress.",
+  "author": "Micah Wood <micah@wpscholar.com> (http://wpscholar.com)",
+  "license": "GPL-3.0+",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wpscholar/mpress-menu-wormhole.git"
+  },
+  "devDependencies": {
+    "del": "^1.2.1",
+    "gulp": "^3.9.1",
+    "gulp-plumber": "^1.1.0",
+    "gulp-shell": "^0.4.3",
+    "mac-sounds": "^0.1.1",
+    "yargs": "^3.32.0"
+  }
+}
