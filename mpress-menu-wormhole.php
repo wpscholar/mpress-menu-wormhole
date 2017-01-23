@@ -9,7 +9,7 @@
  * License: GPL3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  *
- * Copyright 2013-2016 by Micah Wood - All rights reserved.
+ * Copyright 2013-2017 by Micah Wood - All rights reserved.
  */
 
 /**
@@ -25,7 +25,10 @@ class mPress_Menu_Wormhole {
 		self::$instance = $this;
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
+			add_action( 'wp_update_nav_menu_item', array( $this, 'wp_update_nav_menu_item' ), 10, 3 );
+			add_filter( 'wp_edit_nav_menu_walker', array( $this, 'wp_edit_nav_menu_walker' ) );
 		} else {
+			add_action( 'wp_nav_menu_objects', array( $this, 'wp_nav_menu_objects' ) );
 			add_filter( 'walker_nav_menu_start_el', array( $this, 'walker_nav_menu_start_el' ), 10, 4 );
 		}
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
@@ -81,6 +84,7 @@ class mPress_Menu_Wormhole {
 						$menu_item_data = array(
 							'menu-item-title'     => $menu->name,
 							'menu-item-type'      => 'taxonomy',
+							'menu-item-url'       => '#',
 							'menu-item-object'    => 'nav_menu',
 							'menu-item-object-id' => $menu->term_id,
 						);
@@ -116,13 +120,21 @@ class mPress_Menu_Wormhole {
 				global $wp_filter;
 				$filters = isset( $wp_filter['wp_nav_menu_args'] ) ? $wp_filter['wp_nav_menu_args'] : false;
 				remove_all_filters( 'wp_nav_menu_args' );
-				$item_output = '<a class="mpress-menu-wormhole" href="#">' . $item->title . '</a>';
+
+				$url = get_post_meta( $item->ID, '_menu_item_url', true );
+				if ( ! empty( $url ) ) {
+					$url = esc_url( $url );
+				} else {
+					// Prevents default redirection on click
+					$url = 'javascript:';
+				}
+				$item_output = "<a class='mpress-nested-menu-link' href='{$url}'>{$item->title}</a>";
 				$item_output .= wp_nav_menu(
 					array(
 						'menu'        => $menu->term_id,
 						'container'   => false,
 						'menu_id'     => $args->menu_id,
-						'menu_class'  => 'sub-menu',
+						'menu_class'  => 'sub-menu mpress-nested-sub-menu',
 						'echo'        => false,
 						'before'      => $args->before,
 						'after'       => $args->after,
@@ -140,6 +152,71 @@ class mPress_Menu_Wormhole {
 		}
 
 		return $item_output;
+	}
+
+	public function wp_nav_menu_objects( $menu_items ) {
+		foreach ( $menu_items as $index => $menu_item ) {
+			if ( 'nav_menu_item' === $menu_item->post_type && 'nav_menu' === $menu_item->object && 'taxonomy' === $menu_item->type ) {
+			    $menu = wp_get_nav_menu_object( $menu_item->object_id );
+				$menu_items[ $index ]->classes[] = 'mpress-nested-menu';
+				if ( $menu && ! empty( $menu->slug ) ) {
+					$menu_items[ $index ]->classes[] = 'mpress-nested-menu-' . $menu->slug;
+				}
+			}
+		}
+
+		return $menu_items;
+	}
+
+	/**
+	 * Overrides the admin nav menu walker
+	 *
+	 * @return string
+	 */
+	function wp_edit_nav_menu_walker() {
+		require_once plugin_dir_path( __FILE__ ) . 'inc/walker-nav-menu-edit.php';
+		add_action( 'wp_nav_menu_item_custom_fields', array( __CLASS__, 'render_menu_item_edit_fields' ), 10, 2 );
+
+		// We override walker on the default priority of 10
+		return 'mPress_Menu_Wormhole_Walker_Nav_Menu_Edit';
+	}
+
+	/**
+	 * Saves our menu item URL
+	 *
+	 * @param $menu_id
+	 * @param $menu_item_id
+	 * @param $args
+	 */
+	public function wp_update_nav_menu_item( $menu_id, $menu_item_id, $args ) {
+		if ( 'nav_menu' === $args['menu-item-object'] && 'taxonomy' === $args['menu-item-type'] ) {
+			if ( isset( $_POST['menu-item-url'] ) && isset( $_POST['menu-item-url'][ $menu_item_id ] ) ) {
+				$url = esc_url_raw( $_POST['menu-item-url'][ $menu_item_id ] );
+				update_post_meta( $menu_item_id, '_menu_item_url', $url );
+			}
+		}
+	}
+
+	/**
+	 * Render our custom menu item edit fields
+	 *
+	 * @param int $item_id
+	 * @param object $item
+	 */
+	public static function render_menu_item_edit_fields( $item_id, $item ) {
+		if ( 'nav_menu' === $item->object && 'taxonomy' === $item->type ) {
+			$url = get_post_meta( $item_id, '_menu_item_url', true );
+			?>
+            <p class="field-url description description-wide">
+                <label>
+                    URL<br>
+                    <input type="text" class="widefat code edit-menu-item-url"
+                           name="menu-item-url[<?php echo esc_attr( $item->ID ); ?>]"
+                           value="<?php echo esc_url( $url ); ?>">
+                </label>
+            </p>
+			<?php
+		}
 	}
 
 }
