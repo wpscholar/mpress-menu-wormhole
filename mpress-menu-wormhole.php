@@ -6,7 +6,7 @@
  * Description: Easily add an existing menu within another WordPress menu.
  * Author: Micah Wood
  * Author URI: https://wpscholar.com
- * Version: 1.1
+ * Version: 1.1.1
  * License: GPL3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -53,6 +53,28 @@ class mPress_Menu_Wormhole {
 	 */
 	public static function get_instance() {
 		return isset( self::$instance ) ? self::$instance : new self();
+	}
+
+	/**
+	 * Allow a small subset of HTML for menu item links.
+	 *
+	 * @return array
+	 */
+	public static function get_allowed_menu_link_html() {
+		return array(
+			'b'      => array(),
+			'br'     => array(),
+			'em'     => array(),
+			'i'      => array(
+				'class' => true,
+			),
+			'span'   => array(
+				'class' => true,
+			),
+			'strong' => array(),
+			'sub'    => array(),
+			'sup'    => array(),
+		);
 	}
 
 	/**
@@ -177,11 +199,8 @@ class mPress_Menu_Wormhole {
 				remove_all_filters( 'wp_nav_menu_args' );
 
 				$url = get_post_meta( $item->ID, '_menu_item_url', true );
-				if ( empty( $url ) ) {
-					// Prevent default redirection on click
-					$url = 'javascript:';
-				}
-				$item_output = '<a href="' . esc_url( $url ) . '">' . esc_html( $item->title ) . '</a>';
+				$item_output = empty( $url ) ? '<a href="javascript:">' : '<a href="' . esc_url( $url ) . '">';
+				$item_output .= wp_kses( $item->title, self::get_allowed_menu_link_html() ) . '</a>';
 				$item_output .= wp_nav_menu(
 					array(
 						'menu'        => $menu->term_id,
