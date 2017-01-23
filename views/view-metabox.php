@@ -1,6 +1,6 @@
 <ul id="nav_menuchecklist-pop" class="categorychecklist">
 
-	<?php foreach ( wp_get_nav_menus() as $menu ): ?>
+	<?php foreach ( wp_get_nav_menus() as $menu ) : ?>
         <li>
             <label>
                 <input type="checkbox"
