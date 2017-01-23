@@ -1,7 +1,7 @@
 # mPress Menu Wormhole
 
 ## Description
-The **mPress Menu Wormhole** plugin allows you to easily add a menu as a submenu to another menu.
+The **mPress Menu Wormhole** plugin allows you to easily add a menu as a sub-menu to another menu.
 
 ### Why?
 
@@ -28,7 +28,7 @@ If you have been granted access to SVN, this section details the processes for r
 #### Check In
 - Be sure that all version numbers in the code and readme have been updated.  Add changelog and upgrade notice entries.
 - Tag the new version in Git
-- Run `gulp project:build` from the project root.
-- Run `gulp svn:addremove` from the SVN directory.
-- Run `gulp svn:tag --v={version}` from the SVN directory
-- Run `svn ci -m "{commit message}"` from the SVN root to commit changes
+- Run `gulp` from the project root.
+- Run `svn st | grep ^? | sed '\''s/?    //'\'' | xargs svn add && vn st | grep ^! | sed '\''s/!    //'\'' | xargs svn rm` to add and remove items from the SVN directory.
+- Run `svn cp trunk tags/{version}` from the SVN root directory.
+- Run `svn ci -m "{commit message}"` from the SVN root to commit changes.

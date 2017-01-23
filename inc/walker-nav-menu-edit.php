@@ -8,6 +8,8 @@ class mPress_Menu_Wormhole_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
 	/**
 	 * Start the element output.
 	 *
+	 * @link https://core.trac.wordpress.org/ticket/18584
+	 *
 	 * @see   Walker_Nav_Menu::start_el()
 	 * @since 3.0.0
 	 *
@@ -32,10 +34,19 @@ class mPress_Menu_Wormhole_Walker_Nav_Menu_Edit extends Walker_Nav_Menu_Edit {
 		$output = $this->str_replace_last( $search, $replace, $output );
 	}
 
+	/**
+	 * Search and replace last instance.
+	 *
+	 * @param string $search
+	 * @param string $replace
+	 * @param string $str
+	 *
+	 * @return string
+	 */
 	function str_replace_last( $search, $replace, $str ) {
 		if ( ( $pos = strrpos( $str, $search ) ) !== false ) {
 			$search_length = strlen( $search );
-			$str           = substr_replace( $str, $replace, $pos, $search_length );
+			$str = substr_replace( $str, $replace, $pos, $search_length );
 		}
 
 		return $str;

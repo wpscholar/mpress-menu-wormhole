@@ -1,10 +1,10 @@
 === mPress Menu Wormhole ===
 Contributors: woodent
 Donate link: https://www.paypal.me/wpscholar/15
-Tags: menu, menus, navigation, nav, wormhole
+Tags: menu, menus, navigation, nav, wormhole, nested menus, nested navigation
 Requires at least: 3.2
-Tested up to: 4.5.2
-Stable tag: 1.0
+Tested up to: 4.7.1
+Stable tag: 1.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -73,6 +73,12 @@ Well, I tried to warn you.  It wasn't me... you should have read the instruction
 
 == Changelog ==
 
+= 1.1 =
+
+* Added ability to set a URL for nav menu menu items.
+* Updated code after security review.
+* Tested in WordPress version 4.7.1
+
 = 1.0 =
 
 * Tested in WordPress version 4.5.2
@@ -85,4 +91,8 @@ Well, I tried to warn you.  It wasn't me... you should have read the instruction
 
 = 1.0 =
 
-* Plugin updated to reflect that it works with WordPress version 4.5.2
+Plugin updated to reflect that it works with WordPress version 4.5.2
+
+= 1.1 =
+
+Added ability to set a URL for nav menu menu items. Security updates. Tested with WordPress version 4.7.1
