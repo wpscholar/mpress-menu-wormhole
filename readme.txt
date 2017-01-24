@@ -4,7 +4,7 @@ Donate link: https://www.paypal.me/wpscholar/15
 Tags: menu, menus, navigation, nav, wormhole, nested menus, nested navigation
 Requires at least: 3.2
 Tested up to: 4.7.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -73,6 +73,11 @@ Well, I tried to warn you.  It wasn't me... you should have read the instruction
 
 == Changelog ==
 
+= 1.1.2 =
+
+* Use a class with static methods instead of a singleton.
+* Allow plugin to be run from within a theme (i.e. WP VIP)
+
 = 1.1.1 =
 
 * Allow a subset of HTML in nav menu menu item link text.
@@ -106,3 +111,7 @@ Added ability to set a URL for nav menu menu items. Security updates. Tested wit
 
 * Allow a subset of HTML in nav menu menu item link text.
 * Ensure that nav menu menu item links are not clickable if URL is not set.
+
+= 1.1.2 =
+
+* Minor fixes for use within an enterprise WordPress environment.

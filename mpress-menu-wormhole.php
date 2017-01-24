@@ -6,53 +6,44 @@
  * Description: Easily add an existing menu within another WordPress menu.
  * Author: Micah Wood
  * Author URI: https://wpscholar.com
- * Version: 1.1.1
+ * Version: 1.1.2
  * License: GPL3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  *
  * Copyright 2013-2017 by Micah Wood - All rights reserved.
  */
 
+if ( ! defined( 'MPRESS_MENU_WORMHOLE_URL' ) ) {
+	define( 'MPRESS_MENU_WORMHOLE_URL', plugins_url( '', __FILE__ ) );
+}
+
 /**
  * Class mPress_Menu_Wormhole
  */
 class mPress_Menu_Wormhole {
 
-	public static $instance;
-
 	protected static $action = 'add_wormhole';
 
 	/**
-	 * mPress_Menu_Wormhole constructor.
+	 * Initialize plugin
 	 */
-	private function __construct() {
-
-		self::$instance = $this;
+	public static function initialize() {
 
 		if ( is_admin() ) {
 
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
-			add_action( 'wp_update_nav_menu_item', array( $this, 'wp_update_nav_menu_item' ), 10, 3 );
-			add_filter( 'wp_edit_nav_menu_walker', array( $this, 'wp_edit_nav_menu_walker' ) );
+			add_action( 'admin_init', array( __CLASS__, 'admin_init' ) );
+			add_action( 'wp_update_nav_menu_item', array( __CLASS__, 'wp_update_nav_menu_item' ), 10, 3 );
+			add_filter( 'wp_edit_nav_menu_walker', array( __CLASS__, 'wp_edit_nav_menu_walker' ) );
 
 		} else {
 
-			add_filter( 'walker_nav_menu_start_el', array( $this, 'walker_nav_menu_start_el' ), 10, 4 );
+			add_filter( 'walker_nav_menu_start_el', array( __CLASS__, 'walker_nav_menu_start_el' ), 10, 4 );
 
 		}
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			add_action( 'wp_ajax_' . self::$action, array( $this, 'do_ajax' ) );
+			add_action( 'wp_ajax_' . self::$action, array( __CLASS__, 'do_ajax' ) );
 		}
-	}
-
-	/**
-	 * Get (singleton) instance of the mPress_Menu_Wormhole class
-	 *
-	 * @return mPress_Menu_Wormhole
-	 */
-	public static function get_instance() {
-		return isset( self::$instance ) ? self::$instance : new self();
 	}
 
 	/**
@@ -80,32 +71,35 @@ class mPress_Menu_Wormhole {
 	/**
 	 * Add meta box and scripts on admin_init.
 	 */
-	function admin_init() {
+	public static function admin_init() {
 		global $pagenow;
 		if ( 'nav-menus.php' === $pagenow ) {
 			$title = __( 'Navigation Menus', 'mpress-menu-wormhole' );
-			add_meta_box( 'taxonomy-nav_menu', $title, array( $this, 'render_metabox' ), 'nav-menus', 'side', 'low' );
-			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+			add_meta_box( 'taxonomy-nav_menu', $title, array(
+				__CLASS__,
+				'render_metabox'
+			), 'nav-menus', 'side', 'low' );
+			add_action( 'admin_enqueue_scripts', array( __CLASS__, 'admin_enqueue_scripts' ) );
 		}
 	}
 
 	/**
 	 * Render meta box displayed on the nav menu page.
 	 */
-	function render_metabox() {
+	public static function render_metabox() {
 		include( dirname( __FILE__ ) . '/views/view-metabox.php' );
 	}
 
 	/**
 	 * Register admin script and localize data
 	 */
-	function admin_enqueue_scripts() {
+	public static function admin_enqueue_scripts() {
 
 		$prefix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
 		wp_enqueue_script(
 			'mpress-menu-wormhole',
-			plugins_url( "js/jquery.wormhole{$prefix}.js", __FILE__ ),
+			MPRESS_MENU_WORMHOLE_URL . "/js/jquery.wormhole{$prefix}.js",
 			array( 'jquery' )
 		);
 
@@ -123,7 +117,7 @@ class mPress_Menu_Wormhole {
 	/**
 	 * AJAX handler for adding menu items.
 	 */
-	public function do_ajax() {
+	public static function do_ajax() {
 
 		if ( check_ajax_referer( self::$action, 'nonce' ) && current_user_can( 'edit_theme_options' ) ) {
 
@@ -185,7 +179,7 @@ class mPress_Menu_Wormhole {
 	 *
 	 * @return string
 	 */
-	function walker_nav_menu_start_el( $item_output, $item, $depth, $args ) {
+	public static function walker_nav_menu_start_el( $item_output, $item, $depth, $args ) {
 
 		if ( 'taxonomy' === $item->type && 'nav_menu' === $item->object ) {
 
@@ -235,9 +229,9 @@ class mPress_Menu_Wormhole {
 	 *
 	 * @return string
 	 */
-	function wp_edit_nav_menu_walker() {
+	public static function wp_edit_nav_menu_walker() {
 
-		require_once plugin_dir_path( __FILE__ ) . 'inc/walker-nav-menu-edit.php';
+		require_once __DIR__ . '/inc/walker-nav-menu-edit.php';
 
 		add_action( 'wp_nav_menu_item_custom_fields', array( __CLASS__, 'render_menu_item_edit_fields' ), 10, 2 );
 
@@ -251,7 +245,7 @@ class mPress_Menu_Wormhole {
 	 * @param int $menu_item_id
 	 * @param array $args
 	 */
-	public function wp_update_nav_menu_item( $menu_id, $menu_item_id, $args ) {
+	public static function wp_update_nav_menu_item( $menu_id, $menu_item_id, $args ) {
 		if ( 'nav_menu' === $args['menu-item-object'] && 'taxonomy' === $args['menu-item-type'] ) {
 			if ( isset( $_POST['menu-item-url'] ) && isset( $_POST['menu-item-url'][ $menu_item_id ] ) ) {
 				update_post_meta( $menu_item_id, '_menu_item_url', esc_url_raw( $_POST['menu-item-url'][ $menu_item_id ] ) );
@@ -283,4 +277,4 @@ class mPress_Menu_Wormhole {
 
 }
 
-add_action( 'plugins_loaded', array( 'mPress_Menu_Wormhole', 'get_instance' ) );
+mPress_Menu_Wormhole::initialize();
